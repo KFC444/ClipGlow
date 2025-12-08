@@ -95,3 +95,4 @@ $RECYCLE.BIN/
 
 # Application specific
 config.json
+.claude/
