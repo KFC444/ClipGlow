@@ -77,7 +77,7 @@ public class TrayIconManager : IDisposable
         var config = ConfigManager.Instance;
 
         // 标题
-        var titleItem = new ToolStripMenuItem("CopyRelay") { Enabled = false };
+        var titleItem = new ToolStripMenuItem(AppInfo.Name) { Enabled = false };
         menu.Items.Add(titleItem);
         menu.Items.Add(new ToolStripSeparator());
 

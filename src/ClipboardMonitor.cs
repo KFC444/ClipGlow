@@ -11,12 +11,13 @@ public class ClipboardMonitor : IDisposable
 {
     private readonly Action<string> _onClipboardChanged;
     private readonly ClipboardNotificationForm _form;
-    private string? _lastContent;
+    private readonly MouseHook? _mouseHook;
     private bool _disposed;
 
-    public ClipboardMonitor(Action<string> onClipboardChanged)
+    public ClipboardMonitor(Action<string> onClipboardChanged, MouseHook? mouseHook = null)
     {
         _onClipboardChanged = onClipboardChanged;
+        _mouseHook = mouseHook;
         _form = new ClipboardNotificationForm(HandleClipboardChange);
     }
 
@@ -29,15 +30,19 @@ public class ClipboardMonitor : IDisposable
     {
         try
         {
+            // 核心逻辑：检测是否为预复制（浏览器选中即复制行为）
+            if (_mouseHook != null && _mouseHook.IsPossiblePreCopy())
+            {
+                Logger.Debug("剪贴板变化被忽略：检测到可能的预复制行为");
+                return;
+            }
+
             if (!Clipboard.ContainsText()) return;
 
             string content = Clipboard.GetText();
             if (string.IsNullOrEmpty(content)) return;
 
-            // 过滤重复
-            if (content == _lastContent) return;
-            _lastContent = content;
-
+            // 立即响应，无论内容是否相同
             _onClipboardChanged?.Invoke(content);
         }
         catch (Exception ex)

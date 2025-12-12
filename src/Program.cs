@@ -31,6 +31,7 @@ static class Program
 /// </summary>
 public class CopyRelayApp : IDisposable
 {
+    private readonly MouseHook _mouseHook;
     private readonly ClipboardMonitor _clipboardMonitor;
     private readonly FeedbackManager _feedbackManager;
     private readonly TrayIconManager _trayIcon;
@@ -40,7 +41,12 @@ public class CopyRelayApp : IDisposable
     public CopyRelayApp()
     {
         _feedbackManager = new FeedbackManager();
-        _clipboardMonitor = new ClipboardMonitor(OnClipboardChanged);
+
+        // 初始化鼠标钩子（用于检测预复制行为）
+        _mouseHook = new MouseHook();
+        _mouseHook.Start();
+
+        _clipboardMonitor = new ClipboardMonitor(OnClipboardChanged, _mouseHook);
         _updateManager = new UpdateManager();
         _trayIcon = new TrayIconManager(OnExit, OnSettingsChanged, _updateManager);
 
@@ -99,5 +105,6 @@ public class CopyRelayApp : IDisposable
         _clipboardMonitor?.Dispose();
         _feedbackManager?.Dispose();
         _trayIcon?.Dispose();
+        _mouseHook?.Dispose();
     }
 }
