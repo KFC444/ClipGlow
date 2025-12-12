@@ -44,8 +44,9 @@ public static class AutoStartManager
             return !string.IsNullOrEmpty(value) &&
                    value.Equals(currentPath, StringComparison.OrdinalIgnoreCase);
         }
-        catch
+        catch (Exception ex)
         {
+            Logger.Error("检查自启动状态失败", ex);
             return false;
         }
     }
@@ -63,15 +64,17 @@ public static class AutoStartManager
             var exePath = GetExecutablePath();
             if (!File.Exists(exePath))
             {
+                Logger.Warn($"可执行文件不存在: {exePath}");
                 return false;
             }
 
             key.SetValue(AppName, exePath);
+            Logger.Info("已启用开机自启动");
             return true;
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"启用自启动失败: {ex.Message}");
+            Logger.Error("启用自启动失败", ex);
             return false;
         }
     }
@@ -91,11 +94,12 @@ public static class AutoStartManager
                 key.DeleteValue(AppName, false);
             }
 
+            Logger.Info("已禁用开机自启动");
             return true;
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"禁用自启动失败: {ex.Message}");
+            Logger.Error("禁用自启动失败", ex);
             return false;
         }
     }

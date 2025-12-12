@@ -48,6 +48,11 @@ public class ConfigManager
     /// </summary>
     public bool EnableAutoStart { get; set; } = true;
 
+    /// <summary>
+    /// 启用自动更新检查
+    /// </summary>
+    public bool EnableAutoUpdate { get; set; } = true;
+
     private ConfigManager()
     {
         Load();
@@ -72,12 +77,14 @@ public class ConfigManager
                     EnableTrayFlash = data.EnableTrayFlash;
                     EnableIconFeedback = data.EnableIconFeedback;
                     EnableAutoStart = data.EnableAutoStart;
+                    EnableAutoUpdate = data.EnableAutoUpdate;
+                    Logger.Debug("配置加载成功");
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // 加载失败使用默认值
+            Logger.Error("加载配置失败，使用默认值", ex);
         }
     }
 
@@ -97,15 +104,17 @@ public class ConfigManager
                 CustomIconPath = CustomIconPath,
                 EnableTrayFlash = EnableTrayFlash,
                 EnableIconFeedback = EnableIconFeedback,
-                EnableAutoStart = EnableAutoStart
+                EnableAutoStart = EnableAutoStart,
+                EnableAutoUpdate = EnableAutoUpdate
             };
 
             var json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(ConfigFile, json);
+            Logger.Debug("配置保存成功");
         }
-        catch
+        catch (Exception ex)
         {
-            // 保存失败忽略
+            Logger.Error("保存配置失败", ex);
         }
     }
 
@@ -117,5 +126,6 @@ public class ConfigManager
         public bool EnableTrayFlash { get; set; } = true;
         public bool EnableIconFeedback { get; set; } = true;
         public bool EnableAutoStart { get; set; } = true;
+        public bool EnableAutoUpdate { get; set; } = true;
     }
 }

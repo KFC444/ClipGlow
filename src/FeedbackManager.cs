@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.IO;
 using System.Windows.Forms;
 
 namespace CopyRelay;
@@ -112,7 +113,6 @@ public class FeedbackManager : IDisposable
         private float _alpha = 1f;
         private float _scale = 1f;
         private Bitmap? _iconBitmap;
-        private Bitmap? _customIcon;
 
         public FeedbackForm()
         {
@@ -148,8 +148,9 @@ public class FeedbackManager : IDisposable
         /// </summary>
         public void RefreshIcon()
         {
+            // 先释放旧图标
             _iconBitmap?.Dispose();
-            _customIcon?.Dispose();
+            _iconBitmap = null;
 
             var config = ConfigManager.Instance;
             int size = config.IconSize;
@@ -160,11 +161,12 @@ public class FeedbackManager : IDisposable
                 try
                 {
                     using var original = new Bitmap(config.CustomIconPath);
-                    _customIcon = new Bitmap(original, size, size);
-                    _iconBitmap = _customIcon;
+                    _iconBitmap = new Bitmap(original, size, size);
+                    Logger.Debug($"加载自定义图标: {config.CustomIconPath}");
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Logger.Warn($"加载自定义图标失败: {ex.Message}，使用默认图标");
                     _iconBitmap = IconGenerator.GenerateIcon(config.IconStyle, size);
                 }
             }
@@ -209,7 +211,7 @@ public class FeedbackManager : IDisposable
             {
                 Matrix33 = _alpha
             };
-            var attributes = new System.Drawing.Imaging.ImageAttributes();
+            using var attributes = new System.Drawing.Imaging.ImageAttributes();
             attributes.SetColorMatrix(colorMatrix);
 
             g.DrawImage(
@@ -219,8 +221,6 @@ public class FeedbackManager : IDisposable
                 GraphicsUnit.Pixel,
                 attributes
             );
-
-            attributes.Dispose();
         }
 
         protected override void Dispose(bool disposing)
@@ -228,6 +228,7 @@ public class FeedbackManager : IDisposable
             if (disposing)
             {
                 _iconBitmap?.Dispose();
+                _iconBitmap = null;
             }
             base.Dispose(disposing);
         }

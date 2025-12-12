@@ -34,16 +34,21 @@ public class CopyRelayApp : IDisposable
     private readonly ClipboardMonitor _clipboardMonitor;
     private readonly FeedbackManager _feedbackManager;
     private readonly TrayIconManager _trayIcon;
+    private readonly UpdateManager _updateManager;
     private bool _disposed;
 
     public CopyRelayApp()
     {
         _feedbackManager = new FeedbackManager();
         _clipboardMonitor = new ClipboardMonitor(OnClipboardChanged);
-        _trayIcon = new TrayIconManager(OnExit, OnSettingsChanged);
+        _updateManager = new UpdateManager();
+        _trayIcon = new TrayIconManager(OnExit, OnSettingsChanged, _updateManager);
 
         // 初始化自启动设置
         InitializeAutoStart();
+
+        // 启动自动更新检查
+        _updateManager.StartAutoCheck();
     }
 
     private void InitializeAutoStart()
@@ -90,6 +95,7 @@ public class CopyRelayApp : IDisposable
         if (_disposed) return;
         _disposed = true;
 
+        _updateManager?.Dispose();
         _clipboardMonitor?.Dispose();
         _feedbackManager?.Dispose();
         _trayIcon?.Dispose();

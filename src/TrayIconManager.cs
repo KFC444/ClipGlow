@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace CopyRelay;
@@ -10,6 +11,9 @@ namespace CopyRelay;
 /// </summary>
 public class TrayIconManager : IDisposable
 {
+    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+    private static extern bool DestroyIcon(IntPtr handle);
+
     private readonly NotifyIcon _notifyIcon;
     private readonly System.Windows.Forms.Timer _flashTimer;
     private readonly Icon _normalIcon;
@@ -18,11 +22,13 @@ public class TrayIconManager : IDisposable
     private bool _disposed;
     private readonly Action _onExit;
     private readonly Action _onSettingsChanged;
+    private readonly UpdateManager? _updateManager;
 
-    public TrayIconManager(Action onExit, Action onSettingsChanged)
+    public TrayIconManager(Action onExit, Action onSettingsChanged, UpdateManager? updateManager = null)
     {
         _onExit = onExit;
         _onSettingsChanged = onSettingsChanged;
+        _updateManager = updateManager;
 
         // 生成图标
         _normalIcon = CreateTrayIcon(Color.FromArgb(100, 180, 255));
@@ -200,22 +206,60 @@ public class TrayIconManager : IDisposable
         };
         menu.Items.Add(autoStartItem);
 
+        // 自动更新
+        var autoUpdateItem = new ToolStripMenuItem("自动检查更新")
+        {
+            Checked = config.EnableAutoUpdate,
+            CheckOnClick = true
+        };
+        autoUpdateItem.CheckedChanged += (s, e) =>
+        {
+            config.EnableAutoUpdate = autoUpdateItem.Checked;
+            config.Save();
+
+            if (autoUpdateItem.Checked)
+            {
+                _updateManager?.StartAutoCheck();
+            }
+            else
+            {
+                _updateManager?.StopAutoCheck();
+            }
+        };
+        menu.Items.Add(autoUpdateItem);
+
         menu.Items.Add(new ToolStripSeparator());
+
+        // 检查更新
+        var checkUpdateItem = new ToolStripMenuItem("检查更新...");
+        checkUpdateItem.Click += async (s, e) =>
+        {
+            if (_updateManager != null)
+            {
+                await _updateManager.CheckForUpdatesAsync(silent: false);
+            }
+            else
+            {
+                MessageBox.Show("更新功能未启用。", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        };
+        menu.Items.Add(checkUpdateItem);
 
         // 关于
         var aboutItem = new ToolStripMenuItem("关于");
         aboutItem.Click += (s, e) =>
         {
             MessageBox.Show(
-                "CopyRelay - 复制反馈器\n\n" +
-                "版本: 1.0.0\n\n" +
-                "复制内容时显示可爱的图标动画\n\n" +
+                $"{AppInfo.Name} - {AppInfo.Description}\n\n" +
+                $"版本: {AppInfo.Version}\n\n" +
                 "功能:\n" +
-                "• 8种内置图标样式\n" +
+                "• 14种内置图标样式\n" +
+                "• 4种像素风可爱图标\n" +
                 "• 支持自定义图标\n" +
                 "• 可调节图标大小\n" +
-                "• 托盘闪烁提示",
-                "关于 CopyRelay",
+                "• 托盘闪烁提示\n" +
+                "• 自动检查更新",
+                $"关于 {AppInfo.Name}",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information
             );
@@ -318,7 +362,16 @@ public class TrayIconManager : IDisposable
         using var starBrush = new SolidBrush(Color.FromArgb(255, 220, 100));
         g.FillEllipse(starBrush, 22, 3, 7, 7);
 
-        return Icon.FromHandle(bmp.GetHicon());
+        // 创建 Icon 并正确管理句柄
+        IntPtr hIcon = bmp.GetHicon();
+        try
+        {
+            return Icon.FromHandle(hIcon).Clone() as Icon ?? throw new InvalidOperationException("Failed to create icon");
+        }
+        finally
+        {
+            DestroyIcon(hIcon);
+        }
     }
 
     public void Dispose()
@@ -331,37 +384,5 @@ public class TrayIconManager : IDisposable
         _notifyIcon?.Dispose();
         _normalIcon?.Dispose();
         _flashIcon?.Dispose();
-    }
-}
-
-/// <summary>
-/// Graphics 扩展方法 - 圆角矩形
-/// </summary>
-public static class GraphicsExtensions
-{
-    public static void FillRoundedRectangle(this Graphics g, Brush brush, float x, float y, float width, float height, float radius)
-    {
-        using var path = CreateRoundedRectangle(x, y, width, height, radius);
-        g.FillPath(brush, path);
-    }
-
-    public static void DrawRoundedRectangle(this Graphics g, Pen pen, float x, float y, float width, float height, float radius)
-    {
-        using var path = CreateRoundedRectangle(x, y, width, height, radius);
-        g.DrawPath(pen, path);
-    }
-
-    private static GraphicsPath CreateRoundedRectangle(float x, float y, float width, float height, float radius)
-    {
-        var path = new GraphicsPath();
-        float diameter = radius * 2;
-
-        path.AddArc(x, y, diameter, diameter, 180, 90);
-        path.AddArc(x + width - diameter, y, diameter, diameter, 270, 90);
-        path.AddArc(x + width - diameter, y + height - diameter, diameter, diameter, 0, 90);
-        path.AddArc(x, y + height - diameter, diameter, diameter, 90, 90);
-        path.CloseFigure();
-
-        return path;
     }
 }

@@ -95,4 +95,10 @@ $RECYCLE.BIN/
 
 # Application specific
 config.json
+
+# Claude Code local settings
 .claude/
+
+# Published executables
+publish/
+*.exe

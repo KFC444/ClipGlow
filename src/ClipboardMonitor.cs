@@ -40,9 +40,10 @@ public class ClipboardMonitor : IDisposable
 
             _onClipboardChanged?.Invoke(content);
         }
-        catch
+        catch (Exception ex)
         {
-            // 忽略剪贴板访问错误
+            // 剪贴板访问可能因为其他程序锁定而失败，这是正常情况
+            Logger.Debug($"剪贴板访问失败: {ex.Message}");
         }
     }
 
@@ -77,14 +78,16 @@ public class ClipboardMonitor : IDisposable
             FormBorderStyle = FormBorderStyle.None;
             Size = new System.Drawing.Size(0, 0);
             Opacity = 0;
+            Visible = false;
 
-            // 注册剪贴板监听
-            Load += (s, e) => AddClipboardFormatListener(Handle);
+            // 创建窗口句柄
+            CreateHandle();
+
+            // 注册剪贴板监听 (CreateHandle后直接注册，不依赖Load事件)
+            AddClipboardFormatListener(Handle);
+
+            // 窗口关闭时移除监听
             FormClosing += (s, e) => RemoveClipboardFormatListener(Handle);
-
-            // 在后台创建窗口
-            Show();
-            Hide();
         }
 
         protected override void WndProc(ref Message m)
@@ -104,6 +107,12 @@ public class ClipboardMonitor : IDisposable
                 cp.ExStyle |= 0x80; // WS_EX_TOOLWINDOW - 不在任务栏显示
                 return cp;
             }
+        }
+
+        protected override void SetVisibleCore(bool value)
+        {
+            // 防止窗口被显示
+            base.SetVisibleCore(false);
         }
     }
 }
