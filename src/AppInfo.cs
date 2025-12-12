@@ -10,7 +10,7 @@ public static class AppInfo
     /// <summary>
     /// 应用名称
     /// </summary>
-    public const string Name = "CopyRelay";
+    public const string Name = "ClipGlow";
 
     /// <summary>
     /// 应用描述

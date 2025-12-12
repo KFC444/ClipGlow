@@ -10,7 +10,7 @@ namespace CopyRelay;
 /// </summary>
 public static class AutoStartManager
 {
-    private const string AppName = "CopyRelay";
+    private const string AppName = "ClipGlow";
     private const string RegistryKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
 
     /// <summary>
@@ -23,7 +23,7 @@ public static class AutoStartManager
         var exeName = Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location);
         if (string.IsNullOrEmpty(exeName))
         {
-            exeName = "CopyRelay";
+            exeName = "ClipGlow";
         }
         return Path.Combine(baseDir, exeName + ".exe");
     }

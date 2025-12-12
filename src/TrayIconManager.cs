@@ -38,7 +38,7 @@ public class TrayIconManager : IDisposable
         _notifyIcon = new NotifyIcon
         {
             Icon = _normalIcon,
-            Text = "CopyRelay - 复制反馈器",
+            Text = "ClipGlow - 复制反馈器",
             Visible = true,
             ContextMenuStrip = CreateContextMenu()
         };

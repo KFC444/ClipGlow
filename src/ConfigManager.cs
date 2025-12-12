@@ -11,7 +11,7 @@ public class ConfigManager
 {
     private static readonly string ConfigDir = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-        "CopyRelay"
+        "ClipGlow"
     );
 
     private static readonly string ConfigFile = Path.Combine(ConfigDir, "config.json");

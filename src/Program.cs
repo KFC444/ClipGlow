@@ -9,10 +9,10 @@ static class Program
     static void Main()
     {
         // 确保单实例运行
-        using var mutex = new System.Threading.Mutex(true, "CopyRelay_SingleInstance", out bool createdNew);
+        using var mutex = new System.Threading.Mutex(true, "ClipGlow_SingleInstance", out bool createdNew);
         if (!createdNew)
         {
-            MessageBox.Show("CopyRelay 已在运行中!", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("ClipGlow 已在运行中!", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
         }
 

@@ -43,7 +43,7 @@
 ### 方式1: 下载发行版 (推荐)
 
 1. 前往 [GitHub Releases](https://github.com/KFC444/ClipGlow/releases) 或 [Gitee 发行版](https://gitee.com/kfc444/clip-glow/releases) 页面
-2. 下载最新版本的 `CopyRelay.exe`
+2. 下载最新版本的 `ClipGlow.exe`
 3. 双击运行即可
 
 ### 方式2: 从源码编译
@@ -56,14 +56,14 @@ cd ClipGlow/src
 # 编译发布
 dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true
 
-# exe文件位于 bin/Release/net8.0-windows/win-x64/CopyRelay.exe
+# exe文件位于 bin/Release/net8.0-windows/win-x64/ClipGlow.exe
 ```
 
 ---
 
 ## 使用方法
 
-1. **启动程序** - 双击 `CopyRelay.exe`，程序会在系统托盘显示图标
+1. **启动程序** - 双击 `ClipGlow.exe`，程序会在系统托盘显示图标
 2. **测试效果** - 复制任何内容 (Ctrl+C)，屏幕上会弹出动画图标
 3. **自定义设置** - 右键托盘图标打开菜单，选择图标样式、大小等
 4. **检查更新** - 右键托盘图标 → "检查更新..."
